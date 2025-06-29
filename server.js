@@ -15,12 +15,30 @@ const PORT = process.env.PORT || 5000;
 
 //MIDDLEWARE
 app.use(express.json());
+const allowedOrigins = [
+  process.env.CLIENT_URL,         // your main production domain
+  /\.netlify\.app$/,              // all Netlify preview deploys
+];
+
 app.use(
   cors({
-    origin: process.env.CLIENT_URL,
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true); // allow non-browser clients
+
+      const allowed = allowedOrigins.some((o) =>
+        typeof o === "string" ? o === origin : o.test(origin)
+      );
+
+      if (allowed) {
+        callback(null, true);
+      } else {
+        callback(new Error(`CORS error: Origin ${origin} not allowed`));
+      }
+    },
     credentials: true,
   })
 );
+
 
 //MONGO CONNECTION
 mongoose
