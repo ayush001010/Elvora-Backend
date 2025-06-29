@@ -1,0 +1,11 @@
+# Ignore node modules
+node_modules/
+
+# Ignore environment file
+.env
+
+# Ignore seed.js directory
+seed.js
+
+# Ignore seed.js directory
+post.json
