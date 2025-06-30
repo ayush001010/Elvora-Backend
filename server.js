@@ -1,61 +1,59 @@
 import { EventEmitter } from "events";
 EventEmitter.defaultMaxListeners = 20;
 
-import express from 'express';
-import dotenv from 'dotenv';
-import mongoose from 'mongoose';
-import cors from 'cors';
-import postRoute from './routes/postRoutes.js'
-import authRoute from './routes/authRoutes.js';
+import express from "express";
+import dotenv from "dotenv";
+import mongoose from "mongoose";
+import cors from "cors";
+import postRoute from "./routes/postRoutes.js";
+import authRoute from "./routes/authRoutes.js";
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-//MIDDLEWARE
-app.use(express.json());
-const allowedOrigins = [
-  process.env.CLIENT_URL,         // your main production domain
-  /\.netlify\.app$/,              // all Netlify preview deploys
-];
+// Middleware to log origin (for debugging)
+app.use((req, res, next) => {
+  console.log("Request Origin:", req.headers.origin);
+  next();
+});
+
+// CORS setup
+const allowedOrigins = [process.env.CLIENT_URL];
 
 app.use(
   cors({
-    origin: (origin, callback) => {
-      if (!origin) return callback(null, true); // allow non-browser clients
-
-      const allowed = allowedOrigins.some((o) =>
-        typeof o === "string" ? o === origin : o.test(origin)
-      );
-
-      if (allowed) {
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
-        callback(new Error(`CORS error: Origin ${origin} not allowed`));
+        callback(new Error("CORS not allowed for this origin"));
       }
     },
     credentials: true,
   })
 );
 
+// JSON parser
+app.use(express.json());
 
-//MONGO CONNECTION
+// Routes
+app.use("/api/auth", authRoute);
+app.use("/api/posts", postRoute);
+
+// Test Route
+app.get("/", (req, res) => {
+  res.send("❤️ InkStack Backend is running ❤️");
+});
+
+// MongoDB Connection
 mongoose
-    .connect(process.env.MONGO_URL)
-    .then(() => console.log("DATABASE CONNECTED"))
-    .catch((err) => console.log(err));
+  .connect(process.env.MONGO_URL)
+  .then(() => console.log("✅ MongoDB Connected"))
+  .catch((err) => console.error("❌ MongoDB Connection Error:", err));
 
-//ROUTES
-app.use('/api/auth', authRoute);
-app.use('/api/posts', postRoute);
-
-//RENDER
-app.get('/', (req, res) =>{
-    res.send('❤️❤️InkStack-Backend❤️❤️');
-})
-
-//LISTEN
+// Server Start
 app.listen(PORT, () => {
-  console.log(`Server started on http://localhost:${PORT}`);
+  console.log(`🚀 Server started on port ${PORT}`);
 });
