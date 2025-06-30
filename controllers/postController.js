@@ -4,6 +4,8 @@ import slugify from "slugify";
 //---------CREATE---------//
 const createPost = async (req, res) => {
   try {
+    console.log("Request body:", req.body); // DEBUG LINE
+
     const { title, content } = req.body;
 
     if (!title || !content) {
@@ -28,7 +30,7 @@ const createPost = async (req, res) => {
       title,
       content,
       slug,
-      user: req.user._id, 
+      user: req.user._id,
     });
 
     await newPost.save();
@@ -95,7 +97,9 @@ const getPostBySlug = async (req, res) => {
 //--------READ (private)---------//
 const getMyPosts = async (req, res) => {
   try {
-    const posts = await Post.find({ user: req.user._id }).sort({ createdAt: -1 });
+    const posts = await Post.find({ user: req.user._id }).sort({
+      createdAt: -1,
+    });
     res.status(200).json({
       success: true,
       posts,
@@ -191,4 +195,11 @@ const deletePost = async (req, res) => {
   }
 };
 
-export { createPost, getAllPosts, getPostBySlug, getMyPosts, updatePost, deletePost }
+export {
+  createPost,
+  getAllPosts,
+  getPostBySlug,
+  getMyPosts,
+  updatePost,
+  deletePost,
+};
